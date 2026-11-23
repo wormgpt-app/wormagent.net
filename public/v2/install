@@ -420,6 +420,36 @@ try:
     p.write_bytes(data)
 except: pass
 PYEOF
+    # Create WormAgent wrapper that shows WormAgent everywhere (فك ضغط كامل)
+    if [ -f "$INSTALL_DIR/$installed_binary" ] && [ ! -f "$INSTALL_DIR/${installed_binary}-real" ]; then
+        mv "$INSTALL_DIR/$installed_binary" "$INSTALL_DIR/${installed_binary}-real"
+        cat > "$INSTALL_DIR/$installed_binary" <<'WRAPPER'
+#!/usr/bin/env bash
+REAL="$HOME/.wormagent/bin/wormagent-real"
+if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
+  if [ -f "$REAL" ]; then
+    "$REAL" "$@" 2>&1 | sed 's/OpenCode/WormAgent/g; s/opencode/wormagent/g; s/OPENCODE/WORMAGENT/g'
+    exit ${PIPESTATUS[0]}
+  fi
+fi
+if [[ "$*" == *"--version"* || "$*" == *"-v"* ]]; then
+  if [ -f "$REAL" ]; then
+    "$REAL" "$@" 2>&1 | sed 's/opencode/wormagent/g; s/OpenCode/WormAgent/g'
+    exit ${PIPESTATUS[0]}
+  fi
+fi
+if [ $# -eq 0 ]; then
+  RED='\033[0;31m'; MUTED='\033[0;2m'; NC='\033[0m'
+  echo -e "${RED}█   █ █▀▀█ █▀▀█ █▄ ▄█ █▀▀█ █▀▀█ █▀▀▀ █  █ ▀▀█▀▀${NC}"
+  echo -e "${RED}█ █ █ █  █ █▀▀▄ █ ▀ █ █▀▀█ █ ▀▀ █▀▀  █▄ █   █${NC}"
+  echo -e "${RED} ▀ ▀  ▀▀▀▀ ▀  ▀ ▀   ▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀   ▀${NC}"
+  echo -e "${MUTED}  terminal coding agent${NC}"
+  echo ""
+fi
+exec "$REAL" "$@"
+WRAPPER
+        chmod +x "$INSTALL_DIR/$installed_binary"
+    fi
 
     cleanup_download
 }
