@@ -1,7 +1,7 @@
 {
   "name": "WormAgent",
   "short_name": "WormAgent",
-  "description": "The open source coding agent.",
+  "description": "WormAgent — حصريًا WormGPT V1-V8 + Vision على wormgpt.app/v1",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -19,7 +19,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#fbfbfb",
-  "background_color": "#fbfbfb",
+  "theme_color": "#FF0000",
+  "background_color": "#000000",
   "display": "standalone"
 }
