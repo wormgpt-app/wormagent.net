@@ -386,17 +386,17 @@ download_and_install() {
     if [ "$os" = "windows" ]; then
         installed_binary="$APP.exe"
     fi
-    # Try wormagent binary first, fallback to wormagent
+    # Try wormagent binary first, fallback to opencode (GitHub fallback)
     if [ -f "$tmp_dir/package/bin/$binary_name" ]; then
         mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
     elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
         mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/$installed_binary"
-    elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
-        mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/package/bin/opencode" ]; then
+        mv "$tmp_dir/package/bin/opencode" "$INSTALL_DIR/$installed_binary"
     elif [ -f "$tmp_dir/wormagent" ]; then
         mv "$tmp_dir/wormagent" "$INSTALL_DIR/$installed_binary"
-    elif [ -f "$tmp_dir/wormagent" ]; then
-        mv "$tmp_dir/wormagent" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/opencode" ]; then
+        mv "$tmp_dir/opencode" "$INSTALL_DIR/$installed_binary"
     else
         echo "Looking for binary in $tmp_dir:" >&2
         find "$tmp_dir" -type f | head -20 >&2

@@ -222,21 +222,20 @@ else
             if [ "$os" = "windows" ]; then
                 url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}.zip"
             fi
-            # For wormagent, filename is wormagent-* not wormagent-*
+            # For opencode, filename is opencode-* 
             filename="opencode-${target}${archive_ext#/}"
             if [ "$os" = "windows" ]; then
-                filename="wormagent-${target}.zip"
+                filename="opencode-${target}.zip"
             fi
-            url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
             # Check if wormagent version exists, otherwise try 1.19.6
             http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$url" || true)
             if [ "$http_status" = "404" ]; then
                 specific_version="1.19.6"
                 filename="opencode-${target}${archive_ext#/}"
                 if [ "$os" = "windows" ]; then
-                    filename="wormagent-${target}.zip"
+                    filename="opencode-${target}.zip"
                 fi
-                url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
+                url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/$filename"
             fi
         fi
     else
@@ -389,15 +388,15 @@ download_and_install() {
         unzip -q "$tmp_dir/$filename" -d "$tmp_dir"
     fi
 
-    # WormAgent may be downloaded as wormagent binary — handle both
+    # WormAgent may be downloaded as opencode binary — handle both
     if [ -f "$tmp_dir/wormagent" ]; then
         mv "$tmp_dir/wormagent" "$INSTALL_DIR/wormagent"
-    elif [ -f "$tmp_dir/wormagent" ]; then
-        mv "$tmp_dir/wormagent" "$INSTALL_DIR/wormagent"
+    elif [ -f "$tmp_dir/opencode" ]; then
+        mv "$tmp_dir/opencode" "$INSTALL_DIR/wormagent"
     elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
         mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/wormagent"
-    elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
-        mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/wormagent"
+    elif [ -f "$tmp_dir/package/bin/opencode" ]; then
+        mv "$tmp_dir/package/bin/opencode" "$INSTALL_DIR/wormagent"
     else
         echo "Looking for binary in $tmp_dir:" >&2
         find "$tmp_dir" -type f | head -20 >&2
