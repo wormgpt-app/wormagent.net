@@ -210,20 +210,20 @@ else
         fi
 
         if [[ -z "$specific_version" ]]; then
-            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to wormagent v1.19.6${NC}" >&2
+            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to opencode v1.19.6${NC}" >&2
             specific_version="1.19.6"
         fi
         url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
         # Fallback to wormagent if WormAgent release not found
         http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$url" || true)
         if [ "$http_status" = "404" ]; then
-            echo -e "${ORANGE}WormAgent v${specific_version} not found, trying wormagent v${specific_version}...${NC}" >&2
-            url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}${archive_ext#/}"
+            echo -e "${ORANGE}WormAgent v${specific_version} not found, trying opencode v${specific_version}...${NC}" >&2
+            url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}${archive_ext#/}"
             if [ "$os" = "windows" ]; then
-                url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}.zip"
+                url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}.zip"
             fi
             # For wormagent, filename is wormagent-* not wormagent-*
-            filename="wormagent-${target}${archive_ext#/}"
+            filename="opencode-${target}${archive_ext#/}"
             if [ "$os" = "windows" ]; then
                 filename="wormagent-${target}.zip"
             fi
@@ -232,7 +232,7 @@ else
             http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$url" || true)
             if [ "$http_status" = "404" ]; then
                 specific_version="1.19.6"
-                filename="wormagent-${target}${archive_ext#/}"
+                filename="opencode-${target}${archive_ext#/}"
                 if [ "$os" = "windows" ]; then
                     filename="wormagent-${target}.zip"
                 fi

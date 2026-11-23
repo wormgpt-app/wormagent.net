@@ -181,7 +181,7 @@ else
         package=$(echo "$metadata" | sed -n 's/.*"package":"\([^"]*\)".*/\1/p')
 
         if [ -z "$specific_version" ] || [ -z "$package" ]; then
-            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to wormagent 2.4.1${NC}" >&2
+            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to opencode 2.4.1${NC}" >&2
             specific_version="2.4.1"
             package="@wormagent/cli"
             package_scope="@wormagent"
@@ -196,27 +196,27 @@ else
     package_name="$package_scope/cli-$target"
     http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_scope%2fcli-$target/$specific_version" || true)
     if [ "$http_status" = "404" ]; then
-        echo -e "${ORANGE}Package $package_name not found, trying @wormagent/cli-$target...${NC}" >&2
-        package_name="@wormagent/cli-$target"
+        echo -e "${ORANGE}Package $package_name not found, trying @opencode-ai/cli-$target...${NC}" >&2
+        package_name="@opencode-ai/cli-$target"
         http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_name/$specific_version" || true)
     fi
     # Fallback to GitHub releases if npm not available (WormAgent not published yet)
     if [ "$http_status" = "404" ] || [ "$http_status" != "200" ]; then
         echo -e "${ORANGE}npm package not found, falling back to GitHub releases...${NC}" >&2
         # Try WormAgent GitHub first, then wormagent
-        for repo in "wormgpt-app/wormagent" "wormgpt-app/wormagent"; do
+        for repo in "wormgpt-app/wormagent" "anomalyco/opencode"; do
             for ext in ".tar.gz" ".zip"; do
                 test_url="https://github.com/${repo}/releases/download/v${specific_version}/wormagent-${target}${ext}"
                 # v2 assets are named wormagent-* even for wormagent
-                if [ "$repo" = "wormgpt-app/wormagent" ]; then
-                    test_url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}${ext}"
+                if [ "$repo" = "anomalyco/opencode" ]; then
+                    test_url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}${ext}"
                 fi
                 http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$test_url" || true)
                 if [ "$http_status" = "200" ] || [ "$http_status" = "302" ]; then
                     url="$test_url"
                     filename="wormagent-${target}${ext}"
-                    if [ "$repo" = "wormgpt-app/wormagent" ]; then
-                        filename="wormagent-${target}${ext}"
+                    if [ "$repo" = "anomalyco/opencode" ]; then
+                        filename="opencode-${target}${ext}"
                     fi
                     http_status="200"
                     package_name="$repo"
