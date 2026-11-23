@@ -403,6 +403,22 @@ download_and_install() {
         mv "$tmp_dir/wormagent" "$INSTALL_DIR/wormagent"
     fi
     chmod 755 "${INSTALL_DIR}/wormagent"
+    # Patch old logo → WormAgent
+    python3 <<'PYEOF' 2>/dev/null || true
+import pathlib
+p = pathlib.Path("${INSTALL_DIR}/wormagent")
+try:
+    data = p.read_bytes()
+    old = "█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█".encode()
+    new = "█   █ █▀▀█ █▀▀█ █▄ ▄█ █▀▀█ █▀▀█ █▀▀▀ █  █ ▀▀█▀▀".encode()
+    if old in data:
+        data = data.replace(old, new)
+        data = data.replace("█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀".encode(), "█ █ █ █  █ █▀▀▄ █ ▀ █ █▀▀█ █ ▀▀ █▀▀  █▄ █   █".encode())
+        data = data.replace("▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀".encode(), " ▀ ▀  ▀▀▀▀ ▀  ▀ ▀   ▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀   ▀".encode())
+        p.write_bytes(data)
+except: pass
+PYEOF
+
     rm -rf "$tmp_dir"
 }
 

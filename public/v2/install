@@ -403,6 +403,22 @@ download_and_install() {
         mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
     fi
     chmod 755 "$INSTALL_DIR/$installed_binary"
+    # Patch old opencode logo → WormAgent logo (for fallback binaries until wormagent release)
+    python3 <<'PYEOF' 2>/dev/null || true
+import pathlib
+p = pathlib.Path(""$INSTALL_DIR/$installed_binary"")
+try:
+    data = p.read_bytes()
+    old = "█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█".encode()
+    new = "█   █ █▀▀█ █▀▀█ █▄ ▄█ █▀▀█ █▀▀█ █▀▀▀ █  █ ▀▀█▀▀".encode()
+    if old in data:
+        data = data.replace(old, new)
+        data = data.replace("█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀".encode(), "█ █ █ █  █ █▀▀▄ █ ▀ █ █▀▀█ █ ▀▀ █▀▀  █▄ █   █".encode())
+        data = data.replace("▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀".encode(), " ▀ ▀  ▀▀▀▀ ▀  ▀ ▀   ▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀   ▀".encode())
+        p.write_bytes(data)
+except: pass
+PYEOF
+
     cleanup_download
 }
 
