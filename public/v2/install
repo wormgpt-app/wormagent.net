@@ -405,8 +405,8 @@ download_and_install() {
     chmod 755 "$INSTALL_DIR/$installed_binary"
     # Patch old opencode logo → WormAgent logo (for fallback binaries until wormagent release)
     python3 <<'PYEOF' 2>/dev/null || true
-import pathlib
-p = pathlib.Path(""$INSTALL_DIR/$installed_binary"")
+import pathlib, os
+p = pathlib.Path(os.path.expandvars("$INSTALL_DIR/$installed_binary"))
 try:
     data = p.read_bytes()
     old = "█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█".encode()
