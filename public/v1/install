@@ -404,9 +404,9 @@ download_and_install() {
     fi
     chmod 755 "${INSTALL_DIR}/wormagent"
     # Patch old logo → WormAgent
-    python3 <<'PYEOF' 2>/dev/null || true
-import pathlib, os
-p = pathlib.Path(os.path.expandvars("${INSTALL_DIR}/wormagent"))
+    python3 <<PYEOF 2>/dev/null || true
+import pathlib
+p = pathlib.Path("${INSTALL_DIR}/wormagent")
 try:
     data = p.read_bytes()
     old = "█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█".encode()
