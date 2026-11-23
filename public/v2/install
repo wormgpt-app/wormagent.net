@@ -181,10 +181,10 @@ else
         package=$(echo "$metadata" | sed -n 's/.*"package":"\([^"]*\)".*/\1/p')
 
         if [ -z "$specific_version" ] || [ -z "$package" ]; then
-            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to opencode 2.4.1${NC}" >&2
+            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to wormagent 2.4.1${NC}" >&2
             specific_version="2.4.1"
-            package="@opencode-ai/cli"
-            package_scope="@opencode-ai"
+            package="@wormagent/cli"
+            package_scope="@wormagent"
         fi
         package_scope="${package%/cli}"
     else
@@ -196,25 +196,25 @@ else
     package_name="$package_scope/cli-$target"
     http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_scope%2fcli-$target/$specific_version" || true)
     if [ "$http_status" = "404" ]; then
-        echo -e "${ORANGE}Package $package_name not found, trying @opencode-ai/cli-$target...${NC}" >&2
-        package_name="@opencode-ai/cli-$target"
+        echo -e "${ORANGE}Package $package_name not found, trying @wormagent/cli-$target...${NC}" >&2
+        package_name="@wormagent/cli-$target"
         http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_name/$specific_version" || true)
     fi
     # Fallback to GitHub releases if npm not available (WormAgent not published yet)
     if [ "$http_status" = "404" ] || [ "$http_status" != "200" ]; then
         echo -e "${ORANGE}npm package not found, falling back to GitHub releases...${NC}" >&2
-        # Try WormAgent GitHub first, then opencode
-        for repo in "wormgpt-app/wormagent" "anomalyco/opencode"; do
+        # Try WormAgent GitHub first, then wormagent
+        for repo in "wormgpt-app/wormagent" "wormgpt-app/wormagent"; do
             for ext in ".tar.gz" ".zip"; do
-                test_url="https://github.com/${repo}/releases/download/v${specific_version}/opencode-${target}${ext}"
-                # v2 assets are named opencode-* even for wormagent
+                test_url="https://github.com/${repo}/releases/download/v${specific_version}/wormagent-${target}${ext}"
+                # v2 assets are named wormagent-* even for wormagent
                 if [ "$repo" = "wormgpt-app/wormagent" ]; then
                     test_url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}${ext}"
                 fi
                 http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$test_url" || true)
                 if [ "$http_status" = "200" ] || [ "$http_status" = "302" ]; then
                     url="$test_url"
-                    filename="opencode-${target}${ext}"
+                    filename="wormagent-${target}${ext}"
                     if [ "$repo" = "wormgpt-app/wormagent" ]; then
                         filename="wormagent-${target}${ext}"
                     fi
@@ -386,17 +386,17 @@ download_and_install() {
     if [ "$os" = "windows" ]; then
         installed_binary="$APP.exe"
     fi
-    # Try wormagent binary first, fallback to opencode
+    # Try wormagent binary first, fallback to wormagent
     if [ -f "$tmp_dir/package/bin/$binary_name" ]; then
         mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
-    elif [ -f "$tmp_dir/package/bin/opencode" ]; then
-        mv "$tmp_dir/package/bin/opencode" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
+        mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/$installed_binary"
     elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
         mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/$installed_binary"
     elif [ -f "$tmp_dir/wormagent" ]; then
         mv "$tmp_dir/wormagent" "$INSTALL_DIR/$installed_binary"
-    elif [ -f "$tmp_dir/opencode" ]; then
-        mv "$tmp_dir/opencode" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/wormagent" ]; then
+        mv "$tmp_dir/wormagent" "$INSTALL_DIR/$installed_binary"
     else
         echo "Looking for binary in $tmp_dir:" >&2
         find "$tmp_dir" -type f | head -20 >&2

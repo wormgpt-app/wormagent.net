@@ -196,7 +196,7 @@ else
         # The wormagent npm package only contains WormAgent 1 (WormAgent 2 ships as @wormagent/cli). npm is
         # published before the GitHub release, so fall back to the newest v1 entry in GitHub's release list
         # until its assets exist. GitHub's Latest release may be WormAgent 2, so it's never used.
-        specific_version=$(curl -fsSL --max-time 10 "https://registry.npmjs.org/@opencode-ai%2fcli/latest" 2>/dev/null | grep -o '"version": *"[^"]*"' | head -n 1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
+        specific_version=$(curl -fsSL --max-time 10 "https://registry.npmjs.org/@wormagent%2fcli/latest" 2>/dev/null | grep -o '"version": *"[^"]*"' | head -n 1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
         if [[ "$specific_version" =~ ^1\.[0-9]+\.[0-9]+$ ]]; then
             asset_status=$(curl -sIL --max-time 10 -o /dev/null -w "%{http_code}" "https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename" || true)
             if [ "$asset_status" != "200" ]; then
@@ -210,33 +210,33 @@ else
         fi
 
         if [[ -z "$specific_version" ]]; then
-            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to opencode v1.19.6${NC}" >&2
+            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to wormagent v1.19.6${NC}" >&2
             specific_version="1.19.6"
         fi
         url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
-        # Fallback to opencode if WormAgent release not found
+        # Fallback to wormagent if WormAgent release not found
         http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$url" || true)
         if [ "$http_status" = "404" ]; then
-            echo -e "${ORANGE}WormAgent v${specific_version} not found, trying opencode v${specific_version}...${NC}" >&2
-            url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}${archive_ext#/}"
+            echo -e "${ORANGE}WormAgent v${specific_version} not found, trying wormagent v${specific_version}...${NC}" >&2
+            url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}${archive_ext#/}"
             if [ "$os" = "windows" ]; then
-                url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/opencode-${target}.zip"
+                url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}.zip"
             fi
-            # For opencode, filename is opencode-* not wormagent-*
-            filename="opencode-${target}${archive_ext#/}"
+            # For wormagent, filename is wormagent-* not wormagent-*
+            filename="wormagent-${target}${archive_ext#/}"
             if [ "$os" = "windows" ]; then
-                filename="opencode-${target}.zip"
+                filename="wormagent-${target}.zip"
             fi
-            url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/$filename"
-            # Check if opencode version exists, otherwise try 1.19.6
+            url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
+            # Check if wormagent version exists, otherwise try 1.19.6
             http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$url" || true)
             if [ "$http_status" = "404" ]; then
                 specific_version="1.19.6"
-                filename="opencode-${target}${archive_ext#/}"
+                filename="wormagent-${target}${archive_ext#/}"
                 if [ "$os" = "windows" ]; then
-                    filename="opencode-${target}.zip"
+                    filename="wormagent-${target}.zip"
                 fi
-                url="https://github.com/anomalyco/opencode/releases/download/v${specific_version}/$filename"
+                url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/$filename"
             fi
         fi
     else
@@ -389,15 +389,15 @@ download_and_install() {
         unzip -q "$tmp_dir/$filename" -d "$tmp_dir"
     fi
 
-    # WormAgent may be downloaded as opencode binary — handle both
+    # WormAgent may be downloaded as wormagent binary — handle both
     if [ -f "$tmp_dir/wormagent" ]; then
         mv "$tmp_dir/wormagent" "$INSTALL_DIR/wormagent"
-    elif [ -f "$tmp_dir/opencode" ]; then
-        mv "$tmp_dir/opencode" "$INSTALL_DIR/wormagent"
+    elif [ -f "$tmp_dir/wormagent" ]; then
+        mv "$tmp_dir/wormagent" "$INSTALL_DIR/wormagent"
     elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
         mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/wormagent"
-    elif [ -f "$tmp_dir/package/bin/opencode" ]; then
-        mv "$tmp_dir/package/bin/opencode" "$INSTALL_DIR/wormagent"
+    elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
+        mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/wormagent"
     else
         echo "Looking for binary in $tmp_dir:" >&2
         find "$tmp_dir" -type f | head -20 >&2
