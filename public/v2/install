@@ -409,13 +409,18 @@ import pathlib
 p = pathlib.Path("$INSTALL_DIR/$installed_binary")
 try:
     data = p.read_bytes()
+    # Logo
     old = "█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█".encode()
     new = "█   █ █▀▀█ █▀▀█ █▄ ▄█ █▀▀█ █▀▀█ █▀▀▀ █  █ ▀▀█▀▀".encode()
     if old in data:
         data = data.replace(old, new)
         data = data.replace("█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀".encode(), "█ █ █ █  █ █▀▀▄ █ ▀ █ █▀▀█ █ ▀▀ █▀▀  █▄ █   █".encode())
         data = data.replace("▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀".encode(), " ▀ ▀  ▀▀▀▀ ▀  ▀ ▀   ▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀   ▀".encode())
-        p.write_bytes(data)
+    # Help texts
+    data = data.replace(b"OpenCode", b"WormAgent")
+    data = data.replace(b"opencode", b"wormagent")
+    data = data.replace(b"OPENCODE", b"WORMAGENT")
+    p.write_bytes(data)
 except: pass
 PYEOF
 
