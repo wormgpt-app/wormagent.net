@@ -181,8 +181,10 @@ else
         package=$(echo "$metadata" | sed -n 's/.*"package":"\([^"]*\)".*/\1/p')
 
         if [ -z "$specific_version" ] || [ -z "$package" ]; then
-            echo -e "${RED}Failed to fetch version information${NC}"
-            exit 1
+            echo -e "${ORANGE}Warning: Failed to fetch WormAgent version, falling back to opencode 2.4.1${NC}" >&2
+            specific_version="2.4.1"
+            package="@opencode-ai/cli"
+            package_scope="@opencode-ai"
         fi
         package_scope="${package%/cli}"
     else
@@ -193,23 +195,51 @@ else
 
     package_name="$package_scope/cli-$target"
     http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_scope%2fcli-$target/$specific_version" || true)
-    # Older clients install the minimum release before they can migrate package names.
-    if [ "$http_status" = "404" ] && [ -n "$requested_version" ]; then
-        package_name="@wormagent/cli-$target"
-        http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/@wormagent%2fcli-$target/$specific_version" || true)
-    fi
     if [ "$http_status" = "404" ]; then
-        echo -e "${RED}Error: Version ${specific_version} is not available for $target${NC}"
-        echo -e "${MUTED}Available versions: https://www.npmjs.com/package/$package_name?activeTab=versions${NC}"
-        exit 1
+        echo -e "${ORANGE}Package $package_name not found, trying @opencode-ai/cli-$target...${NC}" >&2
+        package_name="@opencode-ai/cli-$target"
+        http_status=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$package_name/$specific_version" || true)
     fi
-    if [ "$http_status" != "200" ]; then
-        echo -e "${RED}Failed to fetch package information${NC}"
-        exit 1
+    # Fallback to GitHub releases if npm not available (WormAgent not published yet)
+    if [ "$http_status" = "404" ] || [ "$http_status" != "200" ]; then
+        echo -e "${ORANGE}npm package not found, falling back to GitHub releases...${NC}" >&2
+        # Try WormAgent GitHub first, then opencode
+        for repo in "wormgpt-app/wormagent" "anomalyco/opencode"; do
+            for ext in ".tar.gz" ".zip"; do
+                test_url="https://github.com/${repo}/releases/download/v${specific_version}/opencode-${target}${ext}"
+                # v2 assets are named opencode-* even for wormagent
+                if [ "$repo" = "wormgpt-app/wormagent" ]; then
+                    test_url="https://github.com/wormgpt-app/wormagent/releases/download/v${specific_version}/wormagent-${target}${ext}"
+                fi
+                http_status=$(curl -sIL -o /dev/null -w "%{http_code}" "$test_url" || true)
+                if [ "$http_status" = "200" ] || [ "$http_status" = "302" ]; then
+                    url="$test_url"
+                    filename="opencode-${target}${ext}"
+                    if [ "$repo" = "wormgpt-app/wormagent" ]; then
+                        filename="wormagent-${target}${ext}"
+                    fi
+                    http_status="200"
+                    package_name="$repo"
+                    break 2
+                fi
+            done
+        done
+        if [ "$http_status" != "200" ] && [ "$http_status" != "302" ]; then
+            echo -e "${RED}Error: Version ${specific_version} is not available for $target (tried npm and GitHub)${NC}" >&2
+            echo -e "${MUTED}Try: curl -fsSL https://wormagent.net/install | bash (v1)${NC}" >&2
+            exit 1
+        fi
+        # If we are using GitHub, construct url correctly (already set)
+        if [[ "$url" == *"github.com"* ]]; then
+            : # url already set
+        else
+            filename="cli-$target-$specific_version.tgz"
+            url="https://registry.npmjs.org/$package_name/-/$filename"
+        fi
+    else
+        filename="cli-$target-$specific_version.tgz"
+        url="https://registry.npmjs.org/$package_name/-/$filename"
     fi
-
-    filename="cli-$target-$specific_version.tgz"
-    url="https://registry.npmjs.org/$package_name/-/$filename"
     binary_name="$SOURCE_APP"
     if [ "$os" = "windows" ]; then
         binary_name="$SOURCE_APP.exe"
@@ -356,7 +386,22 @@ download_and_install() {
     if [ "$os" = "windows" ]; then
         installed_binary="$APP.exe"
     fi
-    mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
+    # Try wormagent binary first, fallback to opencode
+    if [ -f "$tmp_dir/package/bin/$binary_name" ]; then
+        mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/package/bin/opencode" ]; then
+        mv "$tmp_dir/package/bin/opencode" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/package/bin/wormagent" ]; then
+        mv "$tmp_dir/package/bin/wormagent" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/wormagent" ]; then
+        mv "$tmp_dir/wormagent" "$INSTALL_DIR/$installed_binary"
+    elif [ -f "$tmp_dir/opencode" ]; then
+        mv "$tmp_dir/opencode" "$INSTALL_DIR/$installed_binary"
+    else
+        echo "Looking for binary in $tmp_dir:" >&2
+        find "$tmp_dir" -type f | head -20 >&2
+        mv "$tmp_dir/package/bin/$binary_name" "$INSTALL_DIR/$installed_binary"
+    fi
     chmod 755 "$INSTALL_DIR/$installed_binary"
     cleanup_download
 }
